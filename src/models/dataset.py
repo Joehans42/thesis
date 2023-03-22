@@ -31,7 +31,7 @@ class MyImageFolder(Dataset):
 
 
 def test():
-    dataset = MyImageFolder(root_dir="../../data/processed/")
+    dataset = MyImageFolder(root_dir="../../data/processed")
     loader = DataLoader(dataset, batch_size=1, num_workers=8)
 
     for low_res, high_res in loader:
