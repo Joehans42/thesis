@@ -1,5 +1,7 @@
+import os
 import torch
 import config
+import wandb
 from torch import nn
 from torch import optim
 from utils import load_checkpoint, save_checkpoint, plot_examples
@@ -10,7 +12,7 @@ from tqdm import tqdm
 from dataset import MyImageFolder
 
 torch.backends.cudnn.benchmark = True
-
+repo_path = os.environ.get('THESIS_PATH')
 
 def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
     loop = tqdm(loader, leave=True)
@@ -44,12 +46,26 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
         gen_loss.backward()
         opt_gen.step()
 
-        #if idx % 200 == 0:
-        plot_examples("../../data/processed/test/", gen)
+        if idx % 200 == 0:
+            saved_im = plot_examples(repo_path + "/data/processed/test/", gen)
+            
+            ## log wandb loss
+            wandb.log({"example":wandb.Image(saved_im), "disc_loss":loss_disc, "adv_loss":adversarial_loss, "vgg_loss":loss_for_vgg})
 
 
 def main():
-    dataset = MyImageFolder(root_dir="../../data/processed")
+    wandb.init(
+        project="thesis_srgan", entity='s164397',
+
+        config={
+            "learning_rate": config.LEARNING_RATE,
+            "architecture": "SRGAN",
+            "epochs": config.NUM_EPOCHS,
+            "batch_size": config.BATCH_SIZE,
+            "imsize_hr": config.HIGH_RES
+        }
+    )
+    dataset = MyImageFolder(root_dir=repo_path + "/data/processed/crops")
     loader = DataLoader(
         dataset,
         batch_size=config.BATCH_SIZE,
@@ -59,6 +75,11 @@ def main():
     )
     gen = Generator(in_channels=3).to(config.DEVICE)
     disc = Discriminator(in_channels=3).to(config.DEVICE)
+    
+    ## watch models for wandb
+    wandb.watch(gen, log_freq=100)
+    wandb.watch(disc, log_freq=100)
+    
     opt_gen = optim.Adam(gen.parameters(), lr=config.LEARNING_RATE, betas=(0.9, 0.999))
     opt_disc = optim.Adam(disc.parameters(), lr=config.LEARNING_RATE, betas=(0.9, 0.999))
     mse = nn.MSELoss()
