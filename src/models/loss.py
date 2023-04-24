@@ -7,7 +7,7 @@ import config
 class VGGLoss(nn.Module):
     def __init__(self):
         super().__init__()
-        self.vgg = vgg19(pretrained=True).features[:36].eval().to(config.DEVICE)
+        self.vgg = vgg19(weights='DEFAULT').features[:36].eval().to(config.DEVICE)
         self.loss = nn.MSELoss()
 
         for param in self.vgg.parameters():
