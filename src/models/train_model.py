@@ -59,7 +59,10 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
             saved_im = plot_examples(repo_path + "/data/processed/test_crops/", gen)
             
             ## log wandb loss
-            wandb.log({"example":wandb.Image(saved_im), "disc_loss":loss_disc, "adv_loss":adversarial_loss, "vgg_loss":loss_for_vgg, "mse_loss":l2_loss, "gen_loss":gen_loss})
+            wandb.log({"disc_loss":loss_disc, "adv_loss":adversarial_loss, "vgg_loss":loss_for_vgg, "mse_loss":l2_loss, "gen_loss":gen_loss})
+        
+            if idx % 500 == 0:
+                wandb.log({"example":wandb.Image(saved_im)})
 
 
 def main():
@@ -74,7 +77,7 @@ def main():
             "imsize_hr": config.HIGH_RES
         }
     )
-    dataset = MyImageFolder(root_dir=repo_path + "/data/processed/crops")
+    dataset = MyImageFolder(root_dir=repo_path + "/data/processed/crops2")
     loader = DataLoader(
         dataset,
         batch_size=config.BATCH_SIZE,
@@ -122,16 +125,12 @@ def main():
                     .unsqueeze(0)
                     .to(config.DEVICE))
 
-    print(lr_im.shape)
     size = (config.HIGH_RES, config.HIGH_RES)
     #interpolated_image = lr_im.resize(size, resample=Image.Resampling.BICUBIC)
     interpolated_image = T.functional.resize(lr_im, size=size, interpolation=T.InterpolationMode.BICUBIC)
-    print(interpolated_image[0].shape)
     transform = T.ToPILImage()
     trans_int_img = transform(interpolated_image[0])
-    print(type(trans_int_img))
-    print(trans_int_img.size)
-
+    
     wandb.log({"bicubic":wandb.Image(trans_int_img, caption='interpolated image'), "original":wandb.Image(image, caption='original image')})
     save_image(interpolated_image, repo_path + '/src/models/saved/interpolated_img.png')
     image.save(repo_path + '/src/models/saved/original_img.png')
