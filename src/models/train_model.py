@@ -39,6 +39,9 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
         )
         disc_loss_fake = bce(disc_fake, torch.zeros_like(disc_fake))
         loss_disc = disc_loss_fake + disc_loss_real
+        if idx == 0:
+            print(disc_real)
+            print(disc_fake)
 
         opt_disc.zero_grad()
         loss_disc.backward()
@@ -48,25 +51,32 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
         disc_fake = disc(fake)
         l2_loss = mse(fake, high_res)
         adversarial_loss = 1e-3 * bce(disc_fake, torch.ones_like(disc_fake))
+        # 2e-6 * vgg
         loss_for_vgg = 0.006 * vgg_loss(fake, high_res)
-        gen_loss = l2_loss + loss_for_vgg + adversarial_loss
+        gen_loss = loss_for_vgg + adversarial_loss + l2_loss
+        # + l2_loss
 
         opt_gen.zero_grad()
         gen_loss.backward()
         opt_gen.step()
 
-        if idx % 50 == 0:
+        '''if idx % 100 == 0:
             saved_im = plot_examples(repo_path + "/data/processed/test_crops/", gen)
             
             ## log wandb loss
             wandb.log({"disc_loss":loss_disc, "adv_loss":adversarial_loss, "vgg_loss":loss_for_vgg, "mse_loss":l2_loss, "gen_loss":gen_loss})
         
-            if idx % 500 == 0:
+            if idx % 1000 == 0:
                 wandb.log({"example":wandb.Image(saved_im)})
+        '''
+
+def evaluate(disc, gen):
+    return 0
 
 
 def main():
-    wandb.init(
+
+    '''wandb.init(
         project="thesis_srgan", entity='s164397',
 
         config={
@@ -76,7 +86,7 @@ def main():
             "batch_size": config.BATCH_SIZE,
             "imsize_hr": config.HIGH_RES
         }
-    )
+    )'''
     dataset = MyImageFolder(root_dir=repo_path + "/data/processed/crops2")
     loader = DataLoader(
         dataset,
@@ -89,8 +99,8 @@ def main():
     disc = Discriminator(in_channels=3).to(config.DEVICE)
     
     ## watch models for wandb
-    wandb.watch(gen, log_freq=100)
-    wandb.watch(disc, log_freq=100)
+    #wandb.watch(gen, log_freq=100)
+    #wandb.watch(disc, log_freq=100)
     
     opt_gen = optim.Adam(gen.parameters(), lr=config.LEARNING_RATE, betas=(0.9, 0.999))
     opt_disc = optim.Adam(disc.parameters(), lr=config.LEARNING_RATE, betas=(0.9, 0.999))
@@ -131,7 +141,7 @@ def main():
     transform = T.ToPILImage()
     trans_int_img = transform(interpolated_image[0])
     
-    wandb.log({"bicubic":wandb.Image(trans_int_img, caption='interpolated image'), "original":wandb.Image(image, caption='original image')})
+    #wandb.log({"bicubic":wandb.Image(trans_int_img, caption='interpolated image'), "original":wandb.Image(image, caption='original image')})
     save_image(interpolated_image, repo_path + '/src/models/saved/interpolated_img.png')
     image.save(repo_path + '/src/models/saved/original_img.png')
 

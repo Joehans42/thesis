@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-def extract_and_save_random_crops(img, patch_size, crop_size, save_path, im_num):
+def extract_and_save_random_crops(img, patch_size, crop_size, save_path, im_name):
     # Convert the image to a numpy array
     img_array = np.array(img)
 
@@ -35,7 +35,7 @@ def extract_and_save_random_crops(img, patch_size, crop_size, save_path, im_num)
 
     for i, crop in enumerate(crops):
         crop_img = Image.fromarray(crop)
-        crop_img.save(os.path.join(save_path, f"{im_num}_crop_{i}.jpg"))
+        crop_img.save(os.path.join(save_path, f"{im_name}_crop_{i}.png"), 'PNG')
 
 
 num_ims = 100
@@ -43,10 +43,12 @@ classes = pd.read_csv('classification.csv')
 indexes = classes[classes.classification==1].sample(n=num_ims).index
 file_list = classes.iloc[indexes].filename
 im_path = '../data/raw/class1/'
-save_path = '../data/processed/crops2/'
+save_path = '../data/processed/crops3/class1/'
 
-for i, fname in enumerate(file_list):
+for fname in file_list:
     img = Image.open(im_path + fname)
-    extract_and_save_random_crops(img, 500, 384, save_path, fname)
+    ## Removing .jpg from name
+    new_fname = fname.split('.jpg')[0]
+    extract_and_save_random_crops(img, 500, 384, save_path, new_fname)
 
 
