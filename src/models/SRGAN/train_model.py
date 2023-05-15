@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from torch import nn
 from torch import optim
-from utils import load_checkpoint, save_checkpoint, plot_examples
+from utils import load_checkpoint, save_checkpoint, plot_examples, PSNR
 from loss import VGGLoss
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
@@ -14,12 +14,16 @@ import torchvision.transforms as T
 from srgan import Generator, Discriminator
 from tqdm import tqdm
 from dataset import MyImageFolder
+from skimage.metrics import structural_similarity as ssim
 
 torch.backends.cudnn.benchmark = True
 repo_path = os.environ.get('THESIS_PATH')
 
 def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
     loop = tqdm(loader, leave=True)
+
+    disc_losses_real = []
+    disc_losses_fake = []
 
     for idx, (low_res, high_res) in enumerate(loop):
         high_res = high_res.to(config.DEVICE)
@@ -39,9 +43,6 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
         )
         disc_loss_fake = bce(disc_fake, torch.zeros_like(disc_fake))
         loss_disc = disc_loss_fake + disc_loss_real
-        if idx == 0:
-            print(disc_real)
-            print(disc_fake)
 
         opt_disc.zero_grad()
         loss_disc.backward()
@@ -51,8 +52,8 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
         disc_fake = disc(fake)
         l2_loss = mse(fake, high_res)
         adversarial_loss = 1e-3 * bce(disc_fake, torch.ones_like(disc_fake))
-        # 2e-6 * vgg
-        loss_for_vgg = 0.006 * vgg_loss(fake, high_res)
+        # 2e-6 * vgg VS 0.006
+        loss_for_vgg = 2e-6 * vgg_loss(fake, high_res)
         gen_loss = loss_for_vgg + adversarial_loss + l2_loss
         # + l2_loss
 
@@ -60,22 +61,37 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
         gen_loss.backward()
         opt_gen.step()
 
-        '''if idx % 100 == 0:
-            saved_im = plot_examples(repo_path + "/data/processed/test_crops/", gen)
+        ## Log discriminator losses for histogram
+        disc_losses_real = np.append(disc_losses_real, disc_real.detach().cpu().numpy().flatten())
+        disc_losses_fake = np.append(disc_losses_fake, disc_fake.detach().cpu().numpy().flatten())
+
+        if idx % 100 == 0:
+            saved_im, original = plot_examples(repo_path + "/data/processed/test_crops/", gen, True)
             
             ## log wandb loss
-            wandb.log({"disc_loss":loss_disc, "adv_loss":adversarial_loss, "vgg_loss":loss_for_vgg, "mse_loss":l2_loss, "gen_loss":gen_loss})
+            #wandb.log({"disc_loss":loss_disc, "adv_loss":adversarial_loss, "vgg_loss":loss_for_vgg, "mse_loss":l2_loss, "gen_loss":gen_loss})
         
             if idx % 1000 == 0:
-                wandb.log({"example":wandb.Image(saved_im)})
-        '''
+                orig, svd = np.asarray(original), np.squeeze(np.transpose(saved_im.detach().cpu().numpy(), (2,3,1,0)))
+                psnr =  PSNR(orig/255, svd)
+                struc_sim = ssim(orig/255, svd, multichannel=True, channel_axis=2, data_range=1)
+                
+                #wandb.log({"example":wandb.Image(saved_im, caption=f'PSNR: {psnr}, SSIM: {struc_sim}')})
+
+    ## plot examples at the end of epoch
+    saved_im, original = plot_examples(repo_path + "/data/processed/test_crops2/", gen, False)
+
+    ## log histogram
+    #real_hist = wandb.Histogram(disc_losses_real)
+    #fake_hist = wandb.Histogram(disc_losses_fake)
+
+    #wandb.log({'real_hist':real_hist, 'fake_hist':fake_hist})
+        
 
 def evaluate(disc, gen):
     return 0
 
-
 def main():
-
     '''wandb.init(
         project="thesis_srgan", entity='s164397',
 
@@ -87,7 +103,7 @@ def main():
             "imsize_hr": config.HIGH_RES
         }
     )'''
-    dataset = MyImageFolder(root_dir=repo_path + "/data/processed/crops2")
+    dataset = MyImageFolder(root_dir=repo_path + "/data/processed/crops3")
     loader = DataLoader(
         dataset,
         batch_size=config.BATCH_SIZE,
@@ -143,7 +159,9 @@ def main():
     
     #wandb.log({"bicubic":wandb.Image(trans_int_img, caption='interpolated image'), "original":wandb.Image(image, caption='original image')})
     save_image(interpolated_image, repo_path + '/src/models/saved/interpolated_img.png')
-    image.save(repo_path + '/src/models/saved/original_img.png')
+    image.save(repo_path + '/src/models/saved/original_img.png', 'PNG')
 
 if __name__ == "__main__":
     main()
+
+

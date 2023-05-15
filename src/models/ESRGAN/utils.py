@@ -4,8 +4,18 @@ import config
 import numpy as np
 from PIL import Image
 from torchvision.utils import save_image
+from math import log10, sqrt
 
 repo_path = os.environ.get('THESIS_PATH')
+
+def PSNR(original, compressed):
+    mse = np.mean((original - compressed) ** 2)
+    if(mse == 0):  # MSE is zero means no noise is present in the signal .
+                  # Therefore PSNR have no importance.
+        return 100
+    max_pixel = 1.0
+    psnr = 20 * log10((max_pixel / sqrt(mse)))
+    return psnr
 
 def gradient_penalty(critic, real, fake, device):
     BATCH_SIZE, C, H, W = real.shape
@@ -51,12 +61,12 @@ def load_checkpoint(checkpoint_file, model, optimizer, lr):
         param_group["lr"] = lr
 
 
-def plot_examples(low_res_folder, gen):
+def plot_examples(low_res_folder, gen, flag):
     files = os.listdir(low_res_folder)
 
     gen.eval()
     for file in files:
-        image = Image.open(repo_path + "/data/processed/test_crops/" + file)
+        image = Image.open(low_res_folder + file)
         with torch.no_grad():
             lr_im = (config.lowres_transform(image=np.asarray(image))["image"]
                     .unsqueeze(0)
@@ -64,7 +74,10 @@ def plot_examples(low_res_folder, gen):
             
             upscaled_img = gen(lr_im)
 
-        save_image(upscaled_img * 0.5 + 0.5, f"{repo_path}/src/models/saved/{file}")
+        if flag:
+            save_image(upscaled_img, f"{repo_path}/src/models/saved/{file}")
+        else:
+            save_image(upscaled_img, f"{repo_path}/src/models/ESRGAN/test_images/{file}")
     gen.train()
 
-    return upscaled_img * 0.5 + 0.5
+    #return upscaled_img, image

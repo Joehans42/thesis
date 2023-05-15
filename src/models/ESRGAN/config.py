@@ -4,21 +4,22 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 LOAD_MODEL = True
-SAVE_MODEL = False
-CHECKPOINT_GEN = "gen.pth.tar"
-CHECKPOINT_DISC = "disc.pth.tar"
+SAVE_MODEL = True
+CHECKPOINT_GEN = "gen.pth"
+CHECKPOINT_DISC = "disc.pth"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
-NUM_EPOCHS = 1
-BATCH_SIZE = 8
-NUM_WORKERS = 4
+NUM_EPOCHS = 5
+BATCH_SIZE = 16
+LAMBDA_GP = 10
+NUM_WORKERS = 2
 HIGH_RES = 384
 LOW_RES = HIGH_RES // 4
 IMG_CHANNELS = 3
 
 highres_transform = A.Compose(
     [
-        A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        A.Normalize(mean=[0, 0, 0], std=[1, 1, 1]),
         ToTensorV2(),
     ]
 )
