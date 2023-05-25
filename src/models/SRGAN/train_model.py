@@ -130,9 +130,10 @@ def main():
             gen,
             opt_gen,
             config.LEARNING_RATE,
+            True,
         )
         load_checkpoint(
-           config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE,
+           config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE, True,
         )
 
     for epoch in range(config.NUM_EPOCHS):
@@ -162,6 +163,28 @@ def main():
     image.save(repo_path + '/src/models/saved/original_img.png', 'PNG')
 
 if __name__ == "__main__":
-    main()
+    try_model = True
+    gen_path = '/work3/s164397/Thesis/Oblique2019/saved_models/SRGAN/3/gen.pth.tar'
+    #gen_path = repo_path + '/../gen.pth'
+
+    if try_model:
+        # Will just use pretrained weights and run on images
+        # in test_images/ and save the ones to SR in saved/
+        gen = Generator(in_channels=3).to(config.DEVICE)
+        opt_gen = optim.Adam(gen.parameters(), lr=config.LEARNING_RATE, betas=(0.0, 0.9))
+
+        #checkpoint = torch.load(gen_path, map_location=config.DEVICE)
+        #print(checkpoint.keys())
+        
+        load_checkpoint(
+            gen_path,
+            gen,
+            opt_gen,
+            config.LEARNING_RATE,
+            True,
+        )
+        saved_im, original = plot_examples(repo_path + "/data/processed/test_crops2/", gen, False)
+    else:
+        main()
 
 

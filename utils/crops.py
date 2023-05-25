@@ -38,17 +38,21 @@ def extract_and_save_random_crops(img, patch_size, crop_size, save_path, im_name
         crop_img.save(os.path.join(save_path, f"{im_name}_crop_{i}.png"), 'PNG')
 
 
-num_ims = 100
-classes = pd.read_csv('classification.csv')
-indexes = classes[classes.classification==1].sample(n=num_ims).index
-file_list = classes.iloc[indexes].filename
-im_path = '../data/raw/class1/'
-save_path = '../data/processed/crops3/class1/'
+#num_ims = 100
+#classes = pd.read_csv('classification.csv')
+#indexes = classes[classes.classification==1].sample(n=num_ims).index
+#file_list = classes.iloc[indexes].filename
+
+im_path = '../data/alt_datasets/DIV2K/DIV2K_train_HR/'
+save_path = '../data/alt_datasets/DIV2K/train_crops/class/'
+
+file_list = [f for f in os.listdir(im_path)]
+
 
 for fname in file_list:
     img = Image.open(im_path + fname)
     ## Removing .jpg from name
-    new_fname = fname.split('.jpg')[0]
+    new_fname = fname.split('.')[0]
     extract_and_save_random_crops(img, 500, 384, save_path, new_fname)
 
 

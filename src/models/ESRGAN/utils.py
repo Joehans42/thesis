@@ -80,4 +80,4 @@ def plot_examples(low_res_folder, gen, flag):
             save_image(upscaled_img, f"{repo_path}/src/models/ESRGAN/test_images/{file}")
     gen.train()
 
-    #return upscaled_img, image
+    return upscaled_img, image

@@ -49,11 +49,14 @@ def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
     torch.save(checkpoint, filename)
 
 
-def load_checkpoint(checkpoint_file, model, optimizer, lr):
+def load_checkpoint(checkpoint_file, model, optimizer, lr, flag):
     print("=> Loading checkpoint")
     checkpoint = torch.load(checkpoint_file, map_location=config.DEVICE)
-    model.load_state_dict(checkpoint["state_dict"])
-    optimizer.load_state_dict(checkpoint["optimizer"])
+    if flag:
+        model.load_state_dict(checkpoint["state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer"])
+    else:
+        model.load_state_dict(checkpoint)
 
     # If we don't do this then it will just have learning rate of old checkpoint
     # and it will lead to many hours of debugging \:
@@ -77,7 +80,7 @@ def plot_examples(low_res_folder, gen, flag):
         if flag:
             save_image(upscaled_img * 0.5 + 0.5, f"{repo_path}/src/models/saved/{file}")
         else:
-            save_image(upscaled_img * 0.5 + 0.5, f"{repo_path}/src/models/test_images/{file}")
+            save_image(upscaled_img * 0.5 + 0.5, f"{repo_path}/src/models/SRGAN/test_images/{file}")
     gen.train()
 
     return upscaled_img * 0.5 + 0.5, image
