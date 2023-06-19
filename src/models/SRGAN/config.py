@@ -3,7 +3,7 @@ from PIL import Image
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
-LOAD_MODEL = False
+LOAD_MODEL = True
 SAVE_MODEL = True
 CHECKPOINT_GEN = "gen.pth.tar"
 CHECKPOINT_DISC = "disc.pth.tar"
@@ -34,8 +34,8 @@ lowres_transform = A.Compose(
 both_transforms = A.Compose(
     [
         A.RandomCrop(width=HIGH_RES, height=HIGH_RES),
-        A.HorizontalFlip(p=0.5),
-        A.RandomRotate90(p=0.5),
+        #A.HorizontalFlip(p=0.5),
+        A.Rotate(limit=(-10, 10), p=1),
     ]
 )
 

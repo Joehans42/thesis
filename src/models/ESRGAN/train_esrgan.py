@@ -184,8 +184,8 @@ def main():
 
 if __name__ == "__main__":
     try_model = True
-    #gen_path = '/work3/s164397/Thesis/Oblique2019/saved_models/ESRGAN/pretrained/ESRGAN_generator.pth'
-    gen_path = repo_path + '/../gen.pth'
+    gen_path = '/work3/s164397/Thesis/Oblique2019/saved_models/ESRGAN/3/gen.pth'
+    #gen_path = repo_path + '/../gen.pth'
 
     if try_model:
         # Will just use pretrained weights and run on images
@@ -198,7 +198,7 @@ if __name__ == "__main__":
             opt_gen,
             config.LEARNING_RATE,
         )
-        plot_examples(repo_path + "/data/processed/test_crops2/", gen, False)
+        plot_examples(repo_path + "/data/processed/test_crops3/", gen, False)
     else:
         # This will train from scratch
         main()

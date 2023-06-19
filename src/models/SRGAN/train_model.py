@@ -69,30 +69,30 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
             saved_im, original = plot_examples(repo_path + "/data/processed/test_crops/", gen, True)
             
             ## log wandb loss
-            #wandb.log({"disc_loss":loss_disc, "adv_loss":adversarial_loss, "vgg_loss":loss_for_vgg, "mse_loss":l2_loss, "gen_loss":gen_loss})
+            wandb.log({"disc_loss":loss_disc, "adv_loss":adversarial_loss, "vgg_loss":loss_for_vgg, "mse_loss":l2_loss, "gen_loss":gen_loss})
         
             if idx % 1000 == 0:
                 orig, svd = np.asarray(original), np.squeeze(np.transpose(saved_im.detach().cpu().numpy(), (2,3,1,0)))
                 psnr =  PSNR(orig/255, svd)
                 struc_sim = ssim(orig/255, svd, multichannel=True, channel_axis=2, data_range=1)
                 
-                #wandb.log({"example":wandb.Image(saved_im, caption=f'PSNR: {psnr}, SSIM: {struc_sim}')})
+                wandb.log({"example":wandb.Image(saved_im, caption=f'PSNR: {psnr}, SSIM: {struc_sim}')})
 
     ## plot examples at the end of epoch
     saved_im, original = plot_examples(repo_path + "/data/processed/test_crops2/", gen, False)
 
     ## log histogram
-    #real_hist = wandb.Histogram(disc_losses_real)
-    #fake_hist = wandb.Histogram(disc_losses_fake)
+    real_hist = wandb.Histogram(disc_losses_real)
+    fake_hist = wandb.Histogram(disc_losses_fake)
 
-    #wandb.log({'real_hist':real_hist, 'fake_hist':fake_hist})
+    wandb.log({'real_hist':real_hist, 'fake_hist':fake_hist})
         
 
 def evaluate(disc, gen):
     return 0
 
 def main():
-    '''wandb.init(
+    wandb.init(
         project="thesis_srgan", entity='s164397',
 
         config={
@@ -102,8 +102,8 @@ def main():
             "batch_size": config.BATCH_SIZE,
             "imsize_hr": config.HIGH_RES
         }
-    )'''
-    dataset = MyImageFolder(root_dir=repo_path + "/data/processed/crops3")
+    )
+    dataset = MyImageFolder(root_dir=repo_path + "/data/processed/crops4")
     loader = DataLoader(
         dataset,
         batch_size=config.BATCH_SIZE,
@@ -115,8 +115,8 @@ def main():
     disc = Discriminator(in_channels=3).to(config.DEVICE)
     
     ## watch models for wandb
-    #wandb.watch(gen, log_freq=100)
-    #wandb.watch(disc, log_freq=100)
+    wandb.watch(gen, log_freq=100)
+    wandb.watch(disc, log_freq=100)
     
     opt_gen = optim.Adam(gen.parameters(), lr=config.LEARNING_RATE, betas=(0.9, 0.999))
     opt_disc = optim.Adam(disc.parameters(), lr=config.LEARNING_RATE, betas=(0.9, 0.999))
@@ -163,9 +163,9 @@ def main():
     image.save(repo_path + '/src/models/saved/original_img.png', 'PNG')
 
 if __name__ == "__main__":
-    try_model = True
-    gen_path = '/work3/s164397/Thesis/Oblique2019/saved_models/SRGAN/3/gen.pth.tar'
-    #gen_path = repo_path + '/../gen.pth'
+    try_model = False
+    #gen_path = '/work3/s164397/Thesis/Oblique2019/saved_models/SRGAN/4/gen.pth.tar'
+    #gen_path = repo_path + '/../gen.pth.tar'
 
     if try_model:
         # Will just use pretrained weights and run on images
@@ -183,7 +183,7 @@ if __name__ == "__main__":
             config.LEARNING_RATE,
             True,
         )
-        saved_im, original = plot_examples(repo_path + "/data/processed/test_crops2/", gen, False)
+        saved_im, original = plot_examples(repo_path + "/data/processed/test_crops3/", gen, False)
     else:
         main()
 
