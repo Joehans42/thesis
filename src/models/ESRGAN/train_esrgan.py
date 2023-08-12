@@ -116,7 +116,7 @@ def main():
             "imsize_hr": config.HIGH_RES
         }
     )
-    dataset = MyImageFolder(root_dir=repo_path + "/data/processed/crops3")
+    dataset = MyImageFolder(root_dir=repo_path + "/data/processed/crops5")
     loader = DataLoader(
         dataset,
         batch_size=config.BATCH_SIZE,
@@ -183,8 +183,8 @@ def main():
 
 
 if __name__ == "__main__":
-    try_model = True
-    gen_path = '/work3/s164397/Thesis/Oblique2019/saved_models/ESRGAN/3/gen.pth'
+    try_model = False
+    gen_path = '/work3/s164397/Thesis/Oblique2019/saved_models/ESRGAN/2/gen.pth'
     #gen_path = repo_path + '/../gen.pth'
 
     if try_model:

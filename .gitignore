@@ -91,3 +91,7 @@ target/
 # ignoring saved local images
 src/models/saved/
 src/models/EDSR/BSDS300/
+src/models/experiment/
+
+utils/results/
+utils/*.csv

@@ -14,8 +14,10 @@
 # EDSR in the paper (x3) - from EDSR (x2)
 #python main.py --model EDSR --scale 3 --save edsr_x3 --n_resblocks 32 --n_feats 256 --res_scale 0.1 --reset --pre_train [pre-trained EDSR model dir]
 
+## This one right here, officer
+
 # EDSR in the paper (x4) - from EDSR (x2)
-python main.py --model EDSR --scale 4 --save edsr_x4 --n_resblocks 32 --n_feats 256 --res_scale 0.1 --reset --pre_train ../../../../Oblique2019/saved_models/EDSR/pretrained/EDSR_x2.pt --save_results
+#python main.py --model EDSR --scale 4 --save edsr_x4 --n_resblocks 32 --n_feats 256 --res_scale 0.1 --reset --pre_train ../../../../Oblique2019/saved_models/EDSR/pretrained/EDSR_x2.pt --save_results --data_train Custom --data_test Custom --data_range 1-33048/33049-33149 --epochs 50 --batch_size 8
 
 # MDSR baseline model
 #python main.py --template MDSR --model MDSR --scale 2+3+4 --save MDSR_baseline --reset --save_models
@@ -28,8 +30,10 @@ python main.py --model EDSR --scale 4 --save edsr_x4 --n_resblocks 32 --n_feats 
 
 #python main.py --data_test Set5+Set14+B100+Urban100+DIV2K --data_range 801-900 --scale 4 --n_resblocks 32 --n_feats 256 --res_scale 0.1 --pre_train download --test_only --self_ensemble
 
+## Also this one
+
 # Test your own images
-#python main.py --model EDSR --data_test Demo --scale 4 --pre_train ../../../../Oblique2019/saved_models/EDSR/pretrained/EDSR_x4.pt --test_only --save_results --res_scale 0.2
+python main.py --model EDSR --data_test Demo --scale 4 --pre_train ../experiment/edsr_x4/model/model_latest.pt --test_only --save_results --res_scale 0.1
 
 # Advanced - Test with JPEG images 
 #python main.py --model MDSR --data_test Demo --scale 2+3+4 --pre_train download --test_only --save_results

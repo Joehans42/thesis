@@ -3,14 +3,14 @@ from PIL import Image
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
-PRETRAINED = True
-LOAD_MODEL = False
+PRETRAINED = False
+LOAD_MODEL = True
 SAVE_MODEL = True
 CHECKPOINT_GEN = "gen.pth"
 CHECKPOINT_DISC = "disc.pth"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
-NUM_EPOCHS = 5
+NUM_EPOCHS = 3
 BATCH_SIZE = 8
 LAMBDA_GP = 10
 NUM_WORKERS = 2

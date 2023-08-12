@@ -19,9 +19,9 @@ parser.add_argument('--seed', type=int, default=1,
                     help='random seed')
 
 # Data specifications
-parser.add_argument('--dir_data', type=str, default='../../../data/processed/crops4/class1',
+parser.add_argument('--dir_data', type=str, default='../../../data/processed/edsr',
                     help='dataset directory')
-parser.add_argument('--dir_demo', type=str, default='./BSDS300/images/test',
+parser.add_argument('--dir_demo', type=str, default='../../../../Oblique2019/results/EDSR/test_images',
                     help='demo image directory')
 parser.add_argument('--data_train', type=str, default='DIV2K',
                     help='train dataset name')
@@ -29,7 +29,7 @@ parser.add_argument('--data_test', type=str, default='DIV2K',
                     help='test dataset name')
 parser.add_argument('--data_range', type=str, default='1-800/801-810',
                     help='train/test data range')
-parser.add_argument('--ext', type=str, default='sep',
+parser.add_argument('--ext', type=str, default='img', ## Changed from 'sep'
                     help='dataset file extension')
 parser.add_argument('--scale', type=str, default='4',
                     help='super resolution scale')
